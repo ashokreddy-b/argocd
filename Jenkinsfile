@@ -3,7 +3,7 @@ pipeline {
   stages {
 	  stage('Checkout'){
 		  steps{
-			  
+			 git 'https://github.com/ashokreddy-b/JavaInsure.git' 
 		  }
 	  }
    stage('Package and Build App') {
@@ -15,7 +15,7 @@ pipeline {
 
 stage('Image creation') {
       steps {
-        sh 'docker build -t bapathuashokreddy/health-care021:latest .'
+        sh 'docker build -t bapathuashokreddy/javaproject .'
                     }
             }
 
@@ -29,12 +29,12 @@ stage('Docker Login') {
 
  stage('Push Image to Docker Registry') {
       steps {
-        sh 'docker push bapathuashokreddy/health-care021:latest'
+        sh 'docker push bapathuashokreddy/javaproject'
             }
            }
    stage('Run Container'){
 	steps{
-		sh 'docker run -itd -p 8084:8082 bapathuashokreddy/health-care021:latest'
+		sh 'docker run -itd -p 8084:8082 bapathuashokreddy/javaproject'
 	}
 	}
 }
