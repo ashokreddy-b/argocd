@@ -34,7 +34,7 @@ stage('Docker Login') {
            }
    stage('Run Container'){
 	steps{
-		sh 'docker run -itd -p 8080:8081 bapathuashokreddy/javaproject'
+		sh 'docker run -itd -p 8081:8081 bapathuashokreddy/javaproject'
 	}
 	}
 }
