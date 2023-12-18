@@ -15,6 +15,7 @@ stage('Package and Build App') {
    	  stage("Test Application"){
            steps {
                  sh "mvn test"
+		 echo 'Test Application completed'
            }
 }
 stage("SonarQube Analysis"){
