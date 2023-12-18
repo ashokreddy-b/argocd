@@ -51,5 +51,24 @@ stage('deploy the K8S Cluster') {
             }
         }
       }
-  }	
+  }
+ post {
+        success {
+            emailext (
+                subject: "Java Pipeline Status:: ${currentBuild.currentResult}",
+                body: "The build status is: ${currentBuild.currentResult}",
+                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+                to: "bapathu.ashokreddy@avinsystems.com" 
+            )
+        }
+         failure {
+            // This stage will always run, regardless of the build result
+            emailext (
+                subject: "Java Pipeline Status: ${currentBuild.currentResult}",
+                body: "The build status is: ${currentBuild.currentResult}",
+                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+                to: "bapathu.ashokreddy@avinsystems.com"  // Replace with the recipient's email address
+            )
+        }
+    }
 }
