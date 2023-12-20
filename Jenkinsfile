@@ -40,13 +40,13 @@ stage('Run Docker Container'){
 stage('deploy the K8S Cluster') {
         steps{
           sshagent(['sshCredentials']) {
-              sh "scp -o strictHostKeyChecking=no deployjava.yaml ubuntu@172.31.32.226:/home/ubuntu"
+              sh "scp -o strictHostKeyChecking=no deployjava.yaml ubuntu@172.31.15.145:/home/ubuntu"
               script{
                   try{
-                      sh "ssh ubuntu@172.31.32.226 kubectl apply -f ."
+                      sh "ssh ubuntu@172.31.15.145 kubectl apply -f ."
                   }catch(error)
                   {
-                      sh "ssh ubuntu@172.31.32.226 kubectl create -f ."
+                      sh "ssh ubuntu@1172.31.15.145 kubectl create -f ."
                   }
               }
             }
