@@ -25,6 +25,7 @@ stage("SonarQube Analysis"){
                    		sh "mvn sonar:sonar"
 			}
 		}
+		 echo 'Analysis completed'
 	}
 }
 stage('Docker Image creation') {
