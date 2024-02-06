@@ -42,6 +42,17 @@ pipeline {
     			}
 			}	
 		}
+		post {
+		         failure {
+		            // This stage will always run, regardless of the build result
+		            emailext (
+		                subject: "Quality Gate stage: ${currentBuild.currentResult}",
+		                body: "The Quality gate status is: ${currentBuild.currentResult}",
+		                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+		                to: "bapathu.ashokreddy@avinsystems.com"  // Replace with the recipient's email address
+		            )
+		        }
+		    }
 	}
 	stage('Docker Image creation') {
 	      steps {
