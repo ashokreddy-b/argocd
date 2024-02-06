@@ -30,7 +30,7 @@ pipeline {
 	}
 	stage("Quality Gate"){
 		steps{
-			timeout(time: 1, unit: 'MINUTES') {
+			timeout(time: 5, unit: 'MINUTES') {
    			 script {
    			     def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
 
