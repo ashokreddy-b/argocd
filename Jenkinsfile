@@ -30,17 +30,17 @@ pipeline {
 	}
 	stage("Quality Gate"){
 		steps{
-		   script {
-		   timeout(time: 1, unit: 'HOURS'){
-                    def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
-                    
-                    if (qg.status != 'OK') {
-                        error "Quality Gate check failed."
-                    } else {
-                        echo "Quality Gate check passed."
-                    }
-                }
-		   }
+			timeout(time: 1, unit: 'MINUTES') {
+   			 script {
+   			     def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
+
+    			    if (qg.status != 'OK') {
+           			 error "Quality Gate check failed."
+       			 } else {
+           		 echo "Quality Gate check passed."
+       			 }
+    			}
+			}	
 		}
 	}
 	stage('Docker Image creation') {
