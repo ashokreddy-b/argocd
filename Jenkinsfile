@@ -87,7 +87,7 @@ pipeline {
 	stage('Docker Image creation') {
 	      steps {
 	        	script{
-				dockerImage = docker.build "${ECR_REPO}:${IMAGE_TAG}'
+				dockerImage = docker.build "${ECR_REPO}:${IMAGE_TAG}"
 			}
 	      }
 		post {
