@@ -76,12 +76,36 @@ pipeline {
 	    }
 
 	}
-	
+	stage("Quality Gate"){
+		steps{
+			timeout(time: 5, unit: 'MINUTES') {
+   			 script {
+   			     def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
+
+    			    if (qg.status != 'OK') {
+           			 error "Quality Gate check failed."
+       			 } else {
+           		 echo "Quality Gate check passed."
+       			 }
+    			}
+			}	
+		}
+		post {
+		 failure {
+			  // This stage will always run, regardless of the build result
+		          emailext (
+		        subject: "Quality Gate stage: ${currentBuild.currentResult}",
+	                body: "The Quality gate status is: ${currentBuild.currentResult}",
+	                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+	                to: "bapathu.ashokreddy@avinsystems.com"  // Replace with the recipient's email address
+	            )
+	      }
+	    }
+
+	}	
 	stage('Docker Image creation') {
 	      steps {
-	        	script{
-				dockerImage = docker.build "${ECR_REPO}:${IMAGE_TAG}"
-			}
+	        	sh 'docker build -t ashokreddy/javainsureme .'
 	      }
 		post {
 		 failure {
@@ -112,36 +136,6 @@ pipeline {
 	      }
 	    }
 	}
-	stage('login to ECR') {
-            steps {
-                script {
-                    // Login to ECR registry
-                  	  sh "aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 062813490047.dkr.ecr.ap-south-1.amazonaws.com"
-                    
-                   	
-                }
-            }
-	}
-	  stage('Push to ECR') {
-            steps {
-                script {   
-			sh "docker build -t ashokreddy ."
-                   	sh "docker tag ashokreddy:latest 062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy:latest"
-			 sh "docker push 062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy:latest"
-                }
-            }
-	post {
-		 failure {
-			  // This stage will always run, regardless of the build result
-		          emailext (
-		        subject: "Push to ECR stage: ${currentBuild.currentResult}",
-	                body: "The Docker Image creation status is: ${currentBuild.currentResult}",
-	                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-	                to: "bapathu.ashokreddy@avinsystems.com"  // Replace with the recipient's email address
-	            )
-	      }
-	    }
-        }
   }
  post {
         success {
