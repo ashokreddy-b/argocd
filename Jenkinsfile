@@ -1,12 +1,5 @@
 pipeline {
   agent any
-	environment {
-        AWS_DEFAULT_REGION = "ap-south-1" // Replace with your AWS region
-        AWS_ACCOUNT_ID = "062813490047" // Replace with your AWS account ID
-        ECR_REPO = "ashokreddy" // Replace with your ECR repository name
-        IMAGE_TAG = "latest" // Replace with your desired image tag
-	REPOSITORY_URL = "062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy"
-    }
   stages {
 	 stage('Checkout'){
 		 steps{
@@ -119,14 +112,22 @@ pipeline {
 	      }
 	    }
 	}
-	stage('Push to ECR') {
+	stage('login to ECR') {
             steps {
                 script {
                     // Login to ECR registry
-                  	  sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+                  	  sh "aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 062813490047.dkr.ecr.ap-south-1.amazonaws.com"
                     
-                   	sh "docker tag ${ECR_REPO}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG"
-			 sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}"
+                   	
+                }
+            }
+	}
+	  stage('Push to ECR') {
+            steps {
+                script {   
+			sh "docker build -t ashokreddy ."
+                   	sh "docker tag ashokreddy:latest 062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy:latest"
+			 sh "docker push 062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy:latest"
                 }
             }
 	post {
