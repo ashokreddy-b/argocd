@@ -1,5 +1,12 @@
 pipeline {
   agent any
+	environment {
+        AWS_DEFAULT_REGION = "ap-south-1" // Replace with your AWS region
+        AWS_ACCOUNT_ID = "062813490047" // Replace with your AWS account ID
+        ECR_REPO = "ashokreddy" // Replace with your ECR repository name
+        IMAGE_TAG = "latest" // Replace with your desired image tag
+	REPOSITORY_URL = "062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy"
+    }
   stages {
 	 stage('Checkout'){
 		 steps{
@@ -76,36 +83,10 @@ pipeline {
 	    }
 
 	}
-	stage("Quality Gate"){
-		steps{
-			timeout(time: 5, unit: 'MINUTES') {
-   			 script {
-   			     def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
-
-    			    if (qg.status != 'OK') {
-           			 error "Quality Gate check failed."
-       			 } else {
-           		 echo "Quality Gate check passed."
-       			 }
-    			}
-			}	
-		}
-		post {
-		 failure {
-			  // This stage will always run, regardless of the build result
-		          emailext (
-		        subject: "Quality Gate stage: ${currentBuild.currentResult}",
-	                body: "The Quality gate status is: ${currentBuild.currentResult}",
-	                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
-	                to: "bapathu.ashokreddy@avinsystems.com"  // Replace with the recipient's email address
-	            )
-	      }
-	    }
-
-	}
+	
 	stage('Docker Image creation') {
 	      steps {
-	        	sh 'docker build -t bapathuashokreddy/javaproject .'
+	        	sh 'docker build -t ashokreddy .'
 	      }
 		post {
 		 failure {
@@ -122,7 +103,7 @@ pipeline {
 	}       
 	stage('Run Docker Container'){
 		steps{
-			sh 'docker run -itd -p 8081:8081 bapathuashokreddy/javaproject'
+			sh 'docker run -itd -p 8081:8081 ashokreddy'
 	    	}
 		post {
 		 failure {
@@ -136,6 +117,31 @@ pipeline {
 	      }
 	    }
 	}
+	stage('Push to ECR') {
+            steps {
+                script {
+                    // Login to ECR registry
+                    sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+                    
+                    // Tag Docker image with ECR repository
+                    docker.image("your-docker-image-name:${IMAGE_TAG}").tag("${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}")
+                    
+                    // Push Docker image to ECR
+                    docker.image("${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}").push()
+                }
+            }
+	post {
+		 failure {
+			  // This stage will always run, regardless of the build result
+		          emailext (
+		        subject: "Push to ECR stage: ${currentBuild.currentResult}",
+	                body: "The Docker Image creation status is: ${currentBuild.currentResult}",
+	                recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+	                to: "bapathu.ashokreddy@avinsystems.com"  // Replace with the recipient's email address
+	            )
+	      }
+	    }
+        }
   }
  post {
         success {
