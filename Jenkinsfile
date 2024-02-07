@@ -28,15 +28,24 @@ pipeline {
 			 echo 'Analysis completed'
 		}
 	}
-	
+	stage('ECR login') {
+	      steps {
+	        	sh "aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 062813490047.dkr.ecr.ap-south-1.amazonaws.com"
+	      }
+	}  
 	stage('Docker Image creation') {
 	      steps {
-	        	sh 'docker build -t ashokreddy/javainsureme .'
+	        	sh "docker build -t ashokreddy ."
 	      }
 	}       
-	stage('Run Docker Container'){
+	stage('Taggong'){
 		steps{
-			sh 'docker run -itd -p 8081:8081 ashokreddy'
+			sh "docker tag ashokreddy:latest 062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy:latest"
+	    	}
+	}
+	  stage('pushing'){
+		steps{
+			sh "docker push 062813490047.dkr.ecr.ap-south-1.amazonaws.com/ashokreddy:latest"
 	    	}
 	}
 }
