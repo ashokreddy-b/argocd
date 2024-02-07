@@ -123,13 +123,10 @@ pipeline {
             steps {
                 script {
                     // Login to ECR registry
-                    sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+                  	  sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
                     
-                    // Tag Docker image with ECR repository
-                    docker.image("your-docker-image-name:${IMAGE_TAG}").tag("${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}")
-                    
-                    // Push Docker image to ECR
-                    docker.image("${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}").push()
+                   	sh "docker tag ${ECR_REPO}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG"
+			 sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}"
                 }
             }
 	post {
