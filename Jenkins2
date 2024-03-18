@@ -1,0 +1,37 @@
+pipeline {
+  agent any
+  stages {
+	 stage('Checkout'){
+		 steps{
+			 git 'https://github.com/ashokreddy-b/JavaInsure.git' 
+		  }
+	  }
+	stage('Package and Build App') {
+	      steps {
+	        echo 'Build and Package App'
+	        sh 'mvn clean package'
+	        }
+	   }
+	stage("Test Application"){
+	           steps {
+	                 sh "mvn test"
+			 echo 'Testing Application completed'
+	           }
+	}
+	stage("SonarQube Analysis"){
+		steps {
+			script {
+			  	withSonarQubeEnv(credentialsId: 'SonarQube') {
+	                   		sh "mvn sonar:sonar"
+				}
+			}
+			 echo 'Analysis completed'
+		}
+	}  
+	stage('Docker Image creation') {
+	      steps {
+	        	sh "docker build -t ashokreddy ."
+	      }
+	}  
+}
+}
