@@ -1,0 +1,45 @@
+pipeline {
+  agent any
+  stages {
+	 stage('Checkout'){
+		 steps{
+			 git 'https://github.com/ashokreddy-b/argocd.git' 
+		  }
+	  }
+	stage('Package and Build App') {
+	      steps {
+	        echo 'Build and Package App'
+	        sh 'mvn clean package'
+	        }
+	   }
+	stage("Test Application"){
+	           steps {
+	                 sh "mvn test"
+			 echo 'Testing Application completed'
+	           }
+	}
+	stage('Docker Image creation') {
+	      steps {
+	        	sh "docker build -t bapathuashokreddy/javaprojectArgoCD ."
+	      }
+	}  
+    stage('Docker hub login and push Docker Image to docker hub')
+     {
+      withCredentials([usernamePassword(credentialsId: 'DockerCredentials', passwordVariable: 'pwd', usernameVariable: 'username')]) {
+             sh "docker login -u ${env.username} -p ${env.pwd}"
+                    sh 'docker push bapathuashokreddy/javaprojectArgoCD'
+          }
+                
+        }
+    stage('Edit Deployment file') {
+	      steps {
+          git 'https://github.com/ashokreddy-b/argocd.git'
+           sh "sed -i 's|bapathuashokreddy/javaprojectArgoCD|bapathuashokreddy/javaprojectArgoCD:${BUILD_NUMBER}|g' deployjava.yaml" 
+          sh 'git add .'
+        sh 'git commit -m "Update image name"'
+        sh 'git push origin master'
+        }
+    }
+
+}
+}
